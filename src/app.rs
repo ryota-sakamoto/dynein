@@ -41,6 +41,7 @@ const CONFIG_DIR: &str = ".dynein";
 const CONFIG_PATH_ENV_VAR_NAME: &str = "DYNEIN_CONFIG_DIR";
 const CONFIG_FILE_NAME: &str = "config.yml";
 const CACHE_FILE_NAME: &str = "cache.yml";
+const LOCAL_REGION: &str = "local";
 
 pub enum DyneinFileType {
     ConfigFile,
@@ -207,6 +208,11 @@ pub struct Context {
  Overwritten information is retrieved with `effective_*` functions as 1st priority.
 */
 impl Context {
+    pub fn is_local(&self) -> bool {
+        let region = self.effective_region();
+        region.name() == LOCAL_REGION
+    }
+
     pub async fn effective_sdk_config(&self) -> SdkConfig {
         let region = self.effective_region();
         let region_name = region.name();
@@ -296,9 +302,8 @@ impl Context {
         found_table_schema.map(|schema| schema.to_owned())
     }
 
-    pub fn with_region(mut self, ec2_region: &rusoto_ec2::Region) -> Self {
-        self.overwritten_region =
-            Some(Region::from_str(&ec2_region.to_owned().region_name.unwrap()).unwrap());
+    pub fn with_region(mut self, ec2_region: &str) -> Self {
+        self.overwritten_region = Some(Region::from_str(ec2_region).unwrap());
         self
     }
 
@@ -359,7 +364,7 @@ Public functions
 pub fn region_from_str(s: Option<String>, p: Option<u32>) -> Option<Region> {
     let port = p.unwrap_or(8000);
     match s.as_deref() {
-        Some("local") => Some(region_dynamodb_local(port)),
+        Some(LOCAL_REGION) => Some(region_dynamodb_local(port)),
         Some(x) => Region::from_str(x).ok(), // convert Result<T, E> into Option<T>
         None => None,
     }
@@ -669,7 +674,7 @@ fn region_dynamodb_local(port: u32) -> Region {
         &endpoint_url
     );
     Region::Custom {
-        name: "local".to_owned(),
+        name: LOCAL_REGION.to_owned(),
         endpoint: endpoint_url,
     }
 }
