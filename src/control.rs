@@ -16,6 +16,7 @@
 
 // This module interact with DynamoDB Control Plane APIs
 use ::serde::{Deserialize, Serialize};
+use aws_sdk_dynamodb::Client as DynamoDbSdkClient;
 use chrono::{DateTime, NaiveDateTime, Utc};
 use futures::future::join_all;
 use log::{debug, error};
@@ -710,9 +711,10 @@ fn generate_essential_key_definitions(
 /// Basically called by list_tables function, which is called from `$ dy list`.
 /// To make ListTables API result reusable, separated API logic into this standalone function.
 async fn list_tables_api(cx: app::Context) -> Vec<String> {
-    let ddb = DynamoDbClient::new(cx.effective_region());
-    let req: ListTablesInput = Default::default();
-    match ddb.list_tables(req).await {
+    let config = cx.effective_sdk_config().await;
+    let ddb = DynamoDbSdkClient::new(&config);
+
+    match ddb.list_tables().send().await {
         Err(e) => {
             debug!("ListTables API call got an error -- {:#?}", e);
             error!("{}", e.to_string());

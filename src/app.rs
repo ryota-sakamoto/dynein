@@ -15,6 +15,8 @@
  */
 
 use ::serde::{Deserialize, Serialize};
+use aws_config::{meta::region::RegionProviderChain, SdkConfig};
+use aws_types::region::Region as SdkRegion;
 use log::{debug, error, info};
 use rusoto_dynamodb::*;
 use rusoto_signature::Region;
@@ -205,6 +207,15 @@ pub struct Context {
  Overwritten information is retrieved with `effective_*` functions as 1st priority.
 */
 impl Context {
+    pub async fn effective_sdk_config(&self) -> SdkConfig {
+        let region = self.effective_region();
+        let region_name = region.name();
+        let sdk_region = SdkRegion::new(region_name.to_owned());
+
+        let provider = RegionProviderChain::first_try(sdk_region);
+        aws_config::from_env().region(provider).load().await
+    }
+
     pub fn effective_region(&self) -> Region {
         // if region is overwritten by --region comamnd, use it.
         if let Some(ow_region) = &self.overwritten_region {
