@@ -466,13 +466,10 @@ pub async fn delete_table(cx: app::Context, name: String, skip_confirmation: boo
         return;
     }
 
-    let ddb = DynamoDbClient::new(cx.effective_region());
+    let config = cx.effective_sdk_config().await;
+    let ddb = DynamoDbSdkClient::new(&config);
 
-    // The only argument can be passed to DeleteTable operation is "table_name".
-    // https://rusoto.github.io/rusoto/rusoto_dynamodb/struct.DeleteTableInput.html
-    let req: DeleteTableInput = DeleteTableInput { table_name: name };
-
-    match ddb.delete_table(req).await {
+    match ddb.delete_table().table_name(name).send().await {
         Err(e) => {
             debug!("DeleteTable API call got an error -- {:#?}", e);
             error!("{}", e.to_string());
