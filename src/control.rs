@@ -517,27 +517,25 @@ pub async fn backup(cx: app::Context, all_tables: bool) {
     if all_tables {
         println!("NOTE: --all-tables option is ignored without --list option. Just trying to create a backup for the target table...")
     };
-    debug!(
-        "Taking a backof of the table '{}'",
-        cx.effective_table_name()
-    );
+
+    let table_name = cx.effective_table_name();
+    debug!("Taking a backof of the table '{}'", table_name);
+
     let epoch: u64 = time::SystemTime::now()
         .duration_since(time::SystemTime::UNIX_EPOCH)
         .expect("should be able to generate UNIX EPOCH")
         .as_secs();
 
-    let ddb = DynamoDbClient::new(cx.effective_region());
+    let config = cx.effective_sdk_config().await;
+    let ddb = DynamoDbSdkClient::new(&config);
 
-    // You need to pass "table_name" and "backup_name". There's no other fields.
-    // https://rusoto.github.io/rusoto/rusoto_dynamodb/struct.CreateBackupInput.html
-    let req: CreateBackupInput = CreateBackupInput {
-        table_name: cx.effective_table_name(),
-        backup_name: format!("{}--dynein-{}", cx.effective_table_name(), epoch),
-    };
+    let req = ddb
+        .create_backup()
+        .table_name(&table_name)
+        .backup_name(format!("{}--dynein-{}", table_name, epoch));
+    debug!("backup req: {:?}", req);
 
-    debug!("this is the req: {:?}", req);
-
-    match ddb.create_backup(req).await {
+    match req.send().await {
         Err(e) => {
             debug!("CreateBackup API call got an error -- {:#?}", e);
             app::bye(1, &e.to_string());
@@ -548,9 +546,16 @@ pub async fn backup(cx: app::Context, all_tables: bool) {
             println!("Backup creation has been started:");
             println!(
                 "  Backup Name: {} (status: {})",
-                details.backup_name, details.backup_status
+                details.backup_name.expect("should have backup name"),
+                details
+                    .backup_status
+                    .expect("should have backup status")
+                    .as_str()
             );
-            println!("  Backup ARN: {}", details.backup_arn);
+            println!(
+                "  Backup ARN: {}",
+                details.backup_arn.expect("should have backup arn")
+            );
             println!(
                 "  Backup Size: {} bytes",
                 details.backup_size_bytes.expect("should have table size")
