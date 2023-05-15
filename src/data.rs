@@ -31,6 +31,7 @@ use tabwriter::TabWriter;
 // use bytes::Bytes;
 
 use super::app;
+use super::key;
 
 /* =================================================
 struct / enum / const
@@ -894,7 +895,7 @@ fn generate_query_expressions(
     let expression: String = String::from("#DYNEIN_PKNAME = :DYNEIN_PKVAL");
     let mut names = HashMap::<String, String>::new();
     let mut vals = HashMap::<String, AttributeValue>::new();
-    let mut sort_key_of_target_table_or_index: Option<app::Key> = None;
+    let mut sort_key_of_target_table_or_index: Option<key::Key> = None;
 
     match index {
         None =>
@@ -977,7 +978,7 @@ fn generate_query_expressions(
 /// Using existing key condition expr (e.g. "myId <= :idVal") and supplementary mappings (expression_attribute_names, expression_attribute_values),
 /// this method returns GeneratedQueryParams struct. Note that it's called only when sort key expression (ske) exists.
 fn append_sort_key_expression(
-    sort_key: Option<app::Key>,
+    sort_key: Option<key::Key>,
     partition_key_expression: &str,
     sort_key_expression: &str,
     mut names: HashMap<String, String>,
