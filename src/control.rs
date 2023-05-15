@@ -22,7 +22,11 @@ use aws_sdk_dynamodb::{
 use aws_sdk_ec2::Client as Ec2SdkClient;
 use futures::future::join_all;
 use log::{debug, error};
-use rusoto_dynamodb::*;
+use rusoto_dynamodb::{
+    CreateGlobalSecondaryIndexAction, CreateTableInput, DescribeTableInput, DynamoDb,
+    DynamoDbClient, GlobalSecondaryIndexUpdate, Projection, ProvisionedThroughput,
+    RestoreTableFromBackupInput, TableDescription, UpdateTableInput,
+};
 use rusoto_signature::Region;
 use std::{
     io::{self, Error as IOError, Write},
