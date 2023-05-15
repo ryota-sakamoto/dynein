@@ -27,6 +27,7 @@ mod data;
 mod key;
 mod shell;
 mod transfer;
+mod util;
 
 /* =================================================
    helper functions
