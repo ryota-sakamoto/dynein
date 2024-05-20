@@ -1356,10 +1356,7 @@ mod tests {
             actual.vals,
             Some(HashMap::from([(
                 ":DYNEIN_ATTRVAL0".to_owned(),
-                AttributeValue {
-                    s: Some("2020-02-24T22:22:22Z".to_owned()),
-                    ..Default::default()
-                },
+                AttributeValue::S("2020-02-24T22:22:22Z".to_owned()),
             )]))
         );
     }
@@ -1389,7 +1386,7 @@ mod tests {
             Some(HashMap::from([
                 (
                     ":DYNEIN_ATTRVAL0".to_owned(),
-                    AttributeValue::S("0".to_owned())
+                    AttributeValue::N("0".to_owned())
                 ),
                 (
                     ":DYNEIN_ATTRVAL1".to_owned(),
@@ -1418,10 +1415,7 @@ mod tests {
             actual.vals,
             Some(HashMap::from([(
                 ":DYNEIN_ATTRVAL0".to_owned(),
-                AttributeValue {
-                    s: Some("value".to_owned()),
-                    ..Default::default()
-                },
+                AttributeValue::S("value".to_owned()),
             )]))
         );
     }
@@ -1446,10 +1440,7 @@ mod tests {
             actual.vals,
             Some(HashMap::from([(
                 ":DYNEIN_ATTRVAL0".to_owned(),
-                AttributeValue {
-                    s: Some("item1".to_owned()),
-                    ..Default::default()
-                }
+                AttributeValue::S("item1".to_owned()),
             )]))
         );
     }
@@ -1476,17 +1467,11 @@ mod tests {
             Some(HashMap::from([
                 (
                     ":DYNEIN_ATTRVAL0".to_owned(),
-                    AttributeValue {
-                        n: Some("7".to_owned()),
-                        ..Default::default()
-                    }
+                    AttributeValue::N("7".to_owned()),
                 ),
                 (
                     ":DYNEIN_ATTRVAL1".to_owned(),
-                    AttributeValue {
-                        n: Some("3".to_owned()),
-                        ..Default::default()
-                    }
+                    AttributeValue::N("3".to_owned()),
                 ),
             ]))
         )
@@ -1516,13 +1501,7 @@ mod tests {
             actual.vals,
             Some(HashMap::from([(
                 ":DYNEIN_ATTRVAL0".to_owned(),
-                AttributeValue {
-                    l: Some(vec![AttributeValue {
-                        s: Some("item2".to_owned()),
-                        ..Default::default()
-                    }]),
-                    ..Default::default()
-                }
+                AttributeValue::L(vec![AttributeValue::S("item2".to_owned())]),
             )]))
         );
     }
@@ -1551,13 +1530,7 @@ mod tests {
             actual.vals,
             Some(HashMap::from([(
                 ":DYNEIN_ATTRVAL0".to_owned(),
-                AttributeValue {
-                    l: Some(vec![AttributeValue {
-                        s: Some("item2".to_owned()),
-                        ..Default::default()
-                    }]),
-                    ..Default::default()
-                }
+                AttributeValue::L(vec![AttributeValue::S("item2".to_owned())])
             )]))
         );
     }
@@ -1585,10 +1558,7 @@ mod tests {
             actual.vals,
             Some(HashMap::from([(
                 ":DYNEIN_ATTRVAL0".to_owned(),
-                AttributeValue {
-                    n: Some("123".to_owned()),
-                    ..Default::default()
-                }
+                AttributeValue::N("123".to_owned()),
             ),]))
         )
     }
@@ -1644,27 +1614,15 @@ mod tests {
         let actual = dispatch_jsonvalue_to_attrval(&string_list, false);
         assert_eq!(
             actual,
-            AttributeValue {
-                l: Some(vec!(
-                    AttributeValue {
-                        s: Some("+44 1234567".to_owned()),
-                        ..Default::default()
-                    },
-                    AttributeValue {
-                        s: Some("+44 2345678".to_owned()),
-                        ..Default::default()
-                    }
-                )),
-                ..Default::default()
-            }
+            AttributeValue::L(vec![
+                AttributeValue::S("+44 1234567".to_owned()),
+                AttributeValue::S("+44 2345678".to_owned()),
+            ]),
         );
         let actual = dispatch_jsonvalue_to_attrval(&string_list, true);
         assert_eq!(
             actual,
-            AttributeValue {
-                ss: Some(vec!("+44 1234567".to_owned(), "+44 2345678".to_owned())),
-                ..Default::default()
-            }
+            AttributeValue::Ss(vec!("+44 1234567".to_owned(), "+44 2345678".to_owned())),
         );
 
         let number_list = r#"
@@ -1676,27 +1634,15 @@ mod tests {
         let actual = dispatch_jsonvalue_to_attrval(&number_list, false);
         assert_eq!(
             actual,
-            AttributeValue {
-                l: Some(vec!(
-                    AttributeValue {
-                        n: Some("12345".to_owned()),
-                        ..Default::default()
-                    },
-                    AttributeValue {
-                        n: Some("67890".to_owned()),
-                        ..Default::default()
-                    }
-                )),
-                ..Default::default()
-            }
+            AttributeValue::L(vec![
+                AttributeValue::N("12345".to_owned()),
+                AttributeValue::N("67890".to_owned()),
+            ])
         );
         let actual = dispatch_jsonvalue_to_attrval(&number_list, true);
         assert_eq!(
             actual,
-            AttributeValue {
-                ns: Some(vec!["12345".to_owned(), "67890".to_owned()]),
-                ..Default::default()
-            }
+            AttributeValue::Ns(vec!["12345".to_owned(), "67890".to_owned()]),
         );
 
         let mix_list = r#"
@@ -1709,19 +1655,10 @@ mod tests {
             let actual = dispatch_jsonvalue_to_attrval(&mix_list, flag);
             assert_eq!(
                 actual,
-                AttributeValue {
-                    l: Some(vec!(
-                        AttributeValue {
-                            s: Some("text".to_owned()),
-                            ..Default::default()
-                        },
-                        AttributeValue {
-                            n: Some("1234".to_owned()),
-                            ..Default::default()
-                        }
-                    )),
-                    ..Default::default()
-                }
+                AttributeValue::L(vec![
+                    AttributeValue::S("text".to_owned()),
+                    AttributeValue::N("1234".to_owned()),
+                ])
             );
         }
     }

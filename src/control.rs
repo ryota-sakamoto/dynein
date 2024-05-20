@@ -123,11 +123,8 @@ pub async fn describe_table(cx: app::Context, target_table_to_desc: Option<Strin
         cx
     };
 
-    let desc: TableDescription = describe_table_api(
-        &new_context,
-        new_context.effective_table_name(),
-    )
-    .await;
+    let desc: TableDescription =
+        describe_table_api(&new_context, new_context.effective_table_name()).await;
     debug!(
         "Retrieved table to describe is: '{}' table in '{}' region.",
         &new_context.effective_table_name(),
@@ -145,7 +142,9 @@ pub async fn describe_table(cx: app::Context, target_table_to_desc: Option<Strin
     };
 
     match new_context.clone().output.as_deref() {
-        None | Some("yaml") => util::print_table_description(new_context.effective_region().as_ref(), desc),
+        None | Some("yaml") => {
+            util::print_table_description(new_context.effective_region().as_ref(), desc)
+        }
         // Some("raw") => println!("{:#?}", desc),
         Some(_) => {
             println!("ERROR: unsupported output type.");
@@ -156,10 +155,7 @@ pub async fn describe_table(cx: app::Context, target_table_to_desc: Option<Strin
 
 /// Originally intended to be called by describe_table function, which is called from `$ dy desc`,
 /// however it turned out that DescribeTable API result is useful in various logic, separated API into this standalone function.
-pub async fn describe_table_api(
-    cx: &app::Context,
-    table_name: String,
-) -> TableDescription {
+pub async fn describe_table_api(cx: &app::Context, table_name: String) -> TableDescription {
     let region = cx.effective_region();
     let config = cx.effective_sdk_config_with_region(region.as_ref()).await;
     let ddb = DynamoDbSdkClient::new(&config);
@@ -253,7 +249,8 @@ pub async fn create_index(cx: app::Context, index_name: String, given_keys: Vec<
                 .build(),
         )
         .set_provisioned_throughput(None) // TODO: assign default rcu/wcu if base table is Provisioned mode. currently it works only for OnDemand talbe.
-        .build().unwrap();
+        .build()
+        .unwrap();
 
     let gsi_update = GlobalSecondaryIndexUpdate::builder()
         .create(create_gsi_action)
@@ -274,7 +271,10 @@ pub async fn create_index(cx: app::Context, index_name: String, given_keys: Vec<
         }
         Ok(res) => {
             debug!("Returned result: {:#?}", res);
-            util::print_table_description(cx.effective_region().as_ref(), res.table_description.unwrap());
+            util::print_table_description(
+                cx.effective_region().as_ref(),
+                res.table_description.unwrap(),
+            );
         }
     }
 }
@@ -287,8 +287,7 @@ pub async fn update_table(
     rcu: Option<i64>,
 ) {
     // Retrieve TableDescription of the table to update, current (before update) status.
-    let desc: TableDescription =
-        describe_table_api(&cx, table_name_to_update.clone()).await;
+    let desc: TableDescription = describe_table_api(&cx, table_name_to_update.clone()).await;
 
     // Map given string into "Mode" enum. Note that in cmd.rs structopt already limits acceptable values.
     let switching_to_mode: Option<util::Mode> = match mode_string {
@@ -330,7 +329,8 @@ pub async fn update_table(
                                 .write_capacity_units
                                 .unwrap()
                         }))
-                        .build().unwrap(),
+                        .build()
+                        .unwrap(),
                 ),
             }
         }
@@ -348,7 +348,8 @@ pub async fn update_table(
                 ProvisionedThroughput::builder()
                     .read_capacity_units(rcu.unwrap_or(5))
                     .write_capacity_units(wcu.unwrap_or(5))
-                    .build().unwrap(),
+                    .build()
+                    .unwrap(),
             ),
         },
     };

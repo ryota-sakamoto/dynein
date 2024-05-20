@@ -121,7 +121,8 @@ pub fn typed_key_for_schema(
                 .iter()
                 .find(|at| at.attribute_name == key.attribute_name)
                 .expect("primary key should be in AttributeDefinition.")
-                .attribute_type.as_str(),
+                .attribute_type
+                .as_str(),
         )
         .unwrap(),
     })
